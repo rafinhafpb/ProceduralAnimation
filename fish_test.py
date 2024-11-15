@@ -1,1 +1,1 @@
-import numpy as np
+from animation_tests import Circle
