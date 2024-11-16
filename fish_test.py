@@ -1,4 +1,4 @@
-from shapes import Circle, Dot, Line
+from shapes import *
 import pygame
 import sys
 from colors import *
@@ -19,17 +19,15 @@ pygame.mouse.set_cursor(cursor)
 screen = pygame.display.set_mode(screen_size)
 clock = pygame.time.Clock()
 
-nb_points = 14
-
 my_points = []
-body_shape = [52, 58, 40, 60, 68, 71, 65, 50, 28, 15, 11, 9, 7, 7]
+body_shape = cobra_shaped
 
-for i in range(nb_points):
+for i in range(len(body_shape)):
     my_points.append(Circle([250, 250], body_shape[i], white))
 
 my_dot = Dot([250, 250], blue)
 
-radius = 50
+radius = 30
 
 def main():
 
@@ -52,7 +50,7 @@ def main():
             my_points[0].center = mouse_pos + (direction * radius)
 
             # Do the same for every other point in the body
-            for i in range(nb_points-1):
+            for i in range(len(body_shape)-1):
                 if (math.dist(my_points[i].center, my_points[i+1].center)) > radius:
                     # Compute direction vector and constrain position
                     direction = (my_points[i+1].center - my_points[i].center) / math.dist(my_points[i].center, my_points[i+1].center)
@@ -61,7 +59,7 @@ def main():
         # Clear the screen
         screen.fill(black)
 
-        for i in range(nb_points):
+        for i in range(len(body_shape)):
             my_points[i].display()
 
         # Display everything in the screen
