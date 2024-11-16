@@ -35,15 +35,20 @@ def SecondOrderDynamics(x_pos, y_pos, y_vel, constants, T):
 
 # Define shapes
 my_circle = Circle((400, 350), 20, dark_green, 0)
-my_dot = Dot((350, 100), blue)
+my_circle2 = Circle((400, 350), 20, dark_blue, 0)
 
 # Define cursor type
 cursor = pygame.cursors.diamond
 pygame.mouse.set_cursor(cursor)
 
 mouse_pos_array = np.array([tuple((0, 0)), tuple((0, 0))])
+circle_pos_array = np.array([tuple((0, 0)), tuple((0, 0))])
 circle_vel = circle_vel_x, circle_vel_y = [0, 0]
+circle_vel2 = circle_vel_x2, circle_vel_y2 = [0, 0]
+
+# Define control parameters
 constants = f, zeta, r = [1, 0.5, 2]
+constants2 = f, zeta, r = [1, 0.5, 2]
 
 while True:
     #Limit FPS
@@ -63,13 +68,20 @@ while True:
     # Calculate circle position and velocity
     circle_center_x, circle_vel_x = SecondOrderDynamics(mouse_pos_array[:, 0], np.array(my_circle.center)[0], np.array(circle_vel_x), constants, 1/FPS)
     circle_center_y, circle_vel_y = SecondOrderDynamics(mouse_pos_array[:, 1], np.array(my_circle.center)[1], np.array(circle_vel_y), constants, 1/FPS)
+    my_circle.center = circle_center_x, circle_center_y
 
+    # Calculate second circle position and velocity based on first circle
+    circle_pos_array = np.roll(circle_pos_array, -1)
+    circle_pos_array[-1] = np.array(my_circle.center)
+    circle_center_x, circle_vel_x2 = SecondOrderDynamics(circle_pos_array[:, 0], np.array(my_circle2.center)[0], np.array(circle_vel_x2), constants2, 1/FPS)
+    circle_center_y, circle_vel_y2 = SecondOrderDynamics(circle_pos_array[:, 1], np.array(my_circle2.center)[1], np.array(circle_vel_y2), constants2, 1/FPS)
+    my_circle2.center = circle_center_x, circle_center_y
     # Clear the screen
     screen.fill(black)
 
     # Draw circle in calculated position and update
-    my_circle.center = circle_center_x, circle_center_y
     my_circle.display()
+    my_circle2.display()
 
     # Display everything in the screen
     pygame.display.flip()
