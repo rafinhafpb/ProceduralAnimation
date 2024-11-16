@@ -3,7 +3,7 @@ from colors import *
 from typing import List, Optional
 
 class Circle:
-    def __init__(self, center:List[int], size:int, color:List[int], width: Optional[int]=1) -> None:
+    def __init__(self, center:List[int], size:int, color:List[int], width: Optional[int]=1, velocity:List[int]=[0, 0]) -> None:
         """
         Creates a circle to be used with 'pygame' library.
         ## Atributes:
@@ -20,6 +20,9 @@ class Circle:
         if = 0, circle will be totally filled.\n
         if none is specified, it will be set to 1.
 
+        **velocity**: *list* -> (x, y)\n
+        The velocity of the cicle. Used for animation purposes.
+
         ## Methods:
         **display**: *None*\n
         Displays the circle in the active surface (screen).
@@ -28,6 +31,7 @@ class Circle:
         self.size = size
         self.color = color
         self.width = width
+        self.vel = velocity
         self.screen = pygame.display.get_surface()
 
     def display(self):

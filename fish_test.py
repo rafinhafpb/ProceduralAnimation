@@ -2,6 +2,7 @@ from shapes import Circle, Dot, Line
 import pygame
 import sys
 from colors import *
+import math
 
 # Define the screen size
 screen_size = screen_width, screen_height = 1080, 720
@@ -17,14 +18,20 @@ pygame.init()
 pygame.mouse.set_cursor(cursor)
 screen = pygame.display.set_mode(screen_size)
 clock = pygame.time.Clock()
-circles = []
-for i in range(3):
-    circles.append(Circle((250,100*i), 20, white, 5))
-my_line = Line((100,100), (300,300), 5)
+
+nb_points = 14
+
+my_points = []
+body_shape = [52, 58, 40, 60, 68, 71, 65, 50, 28, 15, 11, 9, 7, 7]
+
+for i in range(nb_points):
+    my_points.append(Circle([250, 250], body_shape[i], white))
+
+my_dot = Dot([250, 250], blue)
+
+radius = 50
 
 def main():
-
-    my_circle = Circle((250, 250), 20, white, 0)
 
     while True:
         #Limit FPS
@@ -37,19 +44,25 @@ def main():
                 sys.exit()
         
         # Get mouse position
-        mouse_pos = pygame.mouse.get_pos()
+        mouse_pos = np.array(pygame.mouse.get_pos())
+
+        if (math.dist(my_points[0].center, mouse_pos)) > radius:
+            # Compute direction vector and constrain position
+            direction = (my_points[0].center - mouse_pos) / math.dist(mouse_pos, my_points[0].center)
+            my_points[0].center = mouse_pos + (direction * radius)
+
+            # Do the same for every other point in the body
+            for i in range(nb_points-1):
+                if (math.dist(my_points[i].center, my_points[i+1].center)) > radius:
+                    # Compute direction vector and constrain position
+                    direction = (my_points[i+1].center - my_points[i].center) / math.dist(my_points[i].center, my_points[i+1].center)
+                    my_points[i+1].center = my_points[i].center + (direction * radius)
 
         # Clear the screen
         screen.fill(black)
 
-        # draw circle in current mouse position and display
-        my_circle.center = mouse_pos
-        #my_circle.display()
-        my_line.display()
-
-        for i, circle in enumerate(circles):
-            circle.center = tuple(a+20*i for a in mouse_pos)
-            circle.display()
+        for i in range(nb_points):
+            my_points[i].display()
 
         # Display everything in the screen
         pygame.display.flip()
