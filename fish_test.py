@@ -20,11 +20,11 @@ screen = pygame.display.set_mode(screen_size)
 center_screen = np.array(screen.get_size())/2
 clock = pygame.time.Clock()
 
-my_points, my_dots = [], []
+my_circles, my_dots = [], []
 body_shape = fish_shaped
 
 for i in range(len(body_shape)):
-    my_points.append(Circle(center_screen, body_shape[i], white))
+    my_circles.append(Circle(center_screen, body_shape[i], white))
 
 for i in range(2*len(body_shape) + 3):
     my_dots.append(Dot(center_screen, blue))
@@ -47,44 +47,49 @@ def main():
         # Get mouse position
         mouse_pos = np.array(pygame.mouse.get_pos())
 
-        if (math.dist(my_points[0].center, mouse_pos)) > radius:
+        if (math.dist(my_circles[0].center, mouse_pos)) > radius:
             # Compute direction vector and constrain position
-            direction = (my_points[0].center - mouse_pos) / math.dist(mouse_pos, my_points[0].center)
+            direction = (mouse_pos - my_circles[0].center) / math.dist(mouse_pos, my_circles[0].center)
             directions[0] = direction
 
-            my_points[0].center = mouse_pos + (direction * radius)
+            my_circles[0].center = mouse_pos - direction * radius
 
             # Do the same for every other point in the body
             for i in range(len(body_shape)-1):
-                if (math.dist(my_points[i].center, my_points[i+1].center)) > radius:
+                if (math.dist(my_circles[i].center, my_circles[i+1].center)) > radius:
                     # Compute direction vector and constrain position
-                    direction = (my_points[i+1].center - my_points[i].center) / math.dist(my_points[i].center, my_points[i+1].center)
+                    direction = (my_circles[i].center - my_circles[i+1].center) / math.dist(my_circles[i].center, my_circles[i+1].center)
                     directions[i+1] = direction
 
-                    my_points[i+1].center = my_points[i].center + (direction * radius)
+                    my_circles[i+1].center = my_circles[i].center - direction * radius
             
             # Compute lateral points of body
-            for i, circle in enumerate(my_points):
+            for i, circle in enumerate(my_circles):
+                # Compute dots in the head
                 if i == 0:
                     dx, dy = directions[0]
+
+                    my_dots[-1].center = circle.center + directions[0] * circle.size
+
                     sides = np.array([-dy, dx]), np.array([dy, -dx])
                     my_dots[2*i].center = circle.center + sides[0] * circle.size
                     my_dots[2*i+1].center = circle.center + sides[1] * circle.size
 
-                    # Rotate the vector by 45 degrees counterclockwise
+                    # Rotate the vector by 45 degrees
                     rotated_dx = dx * math.cos(math.pi / 4) - dy * math.sin(math.pi / 4)
                     rotated_dy = dx * math.sin(math.pi / 4) + dy * math.cos(math.pi / 4)
 
                     rotated_direction = np.array([rotated_dx, rotated_dy])
-                    my_dots[-1].center = circle.center + rotated_direction * circle.size
-                    my_dots[-2].center = circle.center + directions[0] * circle.size
+                    my_dots[-2].center = circle.center + rotated_direction * circle.size
 
-                    # Rotate the vector by -45 degrees counterclockwise
+                    # Rotate the vector by -45 degrees
                     rotated_dx = dx * math.cos(math.pi / 4) + dy * math.sin(math.pi / 4)
-                    rotated_dy = - dx * math.sin(math.pi / 4) + dy * math.cos(math.pi / 4)
+                    rotated_dy = -dx * math.sin(math.pi / 4) + dy * math.cos(math.pi / 4)
 
                     rotated_direction = np.array([rotated_dx, rotated_dy])
-                    my_dots[-3].center = circle.center + directions[0] * circle.size
+                    my_dots[-3].center = circle.center + rotated_direction * circle.size
+
+                # Compute dots in the rest of the body
                 else:
                     dx, dy = directions[i]
                     sides = np.array([-dy, dx]), np.array([dy, -dx])
@@ -94,9 +99,11 @@ def main():
         # Clear the screen
         screen.fill(black)
 
+        # Display circles
         for i in range(len(body_shape)):
-            my_points[i].display()
+            my_circles[i].display()
 
+        # Display dots
         for i in range(len(my_dots)):
             my_dots[i].display()
 
