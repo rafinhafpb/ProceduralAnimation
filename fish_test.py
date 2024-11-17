@@ -1,4 +1,5 @@
 from shapes import *
+from dynamics import *
 import pygame
 import sys
 from colors import *
@@ -28,35 +29,14 @@ body_shape = cobra_shaped
 # ----------------------- #
 
 for i in range(len(body_shape)):
-    my_circles.append(Circle(center_screen, body_shape[i], white))
+    my_circles.append(Circle(center_screen, body_shape[i], white, 0))
 
 for i in range(2*len(body_shape) + 4):
-    my_dots.append(Dot(center_screen, blue))
+    my_dots.append(Dot(center_screen, red))
 
 directions = directions = np.zeros((len(body_shape), 2))
 angle_threshold = math.radians(angle_threshold)
 
-def rotate_vector(vector, angle, direction):
-    """
-    Rotates a vector by a given angle and a direction.
-    ## Parameters
-    **vector**: *array_like*\n
-    The vector to be rotated.\n
-    **angle**: *float*\n
-    The angle (in radians) the vector will rotate.\n
-    **direction**: *int*\n
-    1: rotates counterclockwise\n
-    -1: rotates clockwise\n
-    ## Returns:
-    **new_vector**: *ndarray*\n
-    The rotated vector.
-    """
-    # Rotates a vector by a given angle in a direction
-    dx, dy = vector
-    rotated_dx = dx * math.cos(angle) - dy * direction * math.sin(angle)
-    rotated_dy = dx * direction * math.sin(angle) + dy * math.cos(angle)
-    new_vector = np.array([rotated_dx, rotated_dy])
-    return new_vector
 
 def main():
     while True:
@@ -99,40 +79,47 @@ def main():
                         directions[i+1] = direction
                         my_circles[i+1].center = my_circles[i].center - direction * radius
 
-            # Compute lateral points of body
+            # Compute the dots in the right side of the body
             for i, circle in enumerate(my_circles):
                 # Compute dots in the head
                 if i == 0:
-                    # Dot right in front of the direction faced
-                    my_dots[-1].center = circle.center + directions[0] * circle.size
-
                     dx, dy = directions[0]
                     sides = np.array([-dy, dx]), np.array([dy, -dx])
-                    my_dots[2*i].center = circle.center + sides[0] * circle.size
-                    my_dots[2*i+1].center = circle.center + sides[1] * circle.size
+                    # First dot is the right side of the head
+                    my_dots[0].center = circle.center + sides[0] * circle.size
 
                     # Rotate the vector by 45 degrees
-                    rotated_direction = rotate_vector(directions[i], math.pi/4, 1)
-                    my_dots[-2].center = circle.center + rotated_direction * circle.size
+                    rotated_direction = rotate_vector(directions[0], math.pi/4, 1)
+                    my_dots[1].center = circle.center + rotated_direction * circle.size
+
+                    # Dot right in front of the direction faced
+                    my_dots[2].center = circle.center + directions[0] * circle.size
 
                     # Rotate the vector by -45 degrees
-                    rotated_direction = rotate_vector(directions[i], math.pi/4, -1)
-                    my_dots[-3].center = circle.center + rotated_direction * circle.size
-                
-                # Three dots to contour the tail
+                    rotated_direction = rotate_vector(directions[0], math.pi/4, -1)
+                    my_dots[3].center = circle.center + rotated_direction * circle.size
+
+                    # Last dot is the left side of the head
+                    my_dots[4].center = circle.center + sides[1] * circle.size
+
+                # Last dot to contour the tail
                 elif i == (len(my_circles)-1):
                     dx, dy = directions[i]
-                    sides = np.array([-dy, dx]), np.array([dy, -dx])
-                    my_dots[2*i].center = circle.center + sides[0] * circle.size
-                    my_dots[2*i+1].center = circle.center + sides[1] * circle.size
-                    my_dots[-4].center = circle.center - directions[i] * circle.size
+                    my_dots[i + 4].center = circle.center + np.array([dy, -dx]) * circle.size
+                    my_dots[i + 5].center = circle.center - directions[i] * circle.size
 
-                # Compute dots in the rest of the body
+                # Rest of the body
                 else:
                     dx, dy = directions[i]
-                    sides = np.array([-dy, dx]), np.array([dy, -dx])
-                    my_dots[2*i].center = circle.center + sides[0] * circle.size
-                    my_dots[2*i+1].center = circle.center + sides[1] * circle.size
+                    my_dots[i + 4].center = circle.center + np.array([dy, -dx]) * circle.size
+
+            # Compute the dots in the left side of the body
+            for i in range(len(my_circles)):
+                if i > 0:
+                    offset = len(my_circles)
+                    # Itearte backards to finish filling the dots array
+                    dx, dy = directions[-i]
+                    my_dots[i + offset + 4].center = my_circles[-i].center + np.array([-dy, dx]) * my_circles[-i].size
 
         # Clear the screen
         screen.fill(black)
@@ -140,6 +127,10 @@ def main():
         # Display circles
         for i in range(len(body_shape)):
             my_circles[i].display()
+
+        # Draws whole body connecting the dots
+        polygon = np.array([dot.center for dot in my_dots])
+        pygame.draw.polygon(screen, white, polygon)
 
         # Display dots
         for i in range(len(my_dots)):

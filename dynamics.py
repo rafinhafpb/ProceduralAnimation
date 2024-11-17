@@ -1,4 +1,5 @@
 import numpy as np
+import math
 
 def SecondOrderDynamics(x_pos, y_pos, y_vel, constants, T):
     """
@@ -59,3 +60,25 @@ def SecondOrderDynamics(x_pos, y_pos, y_vel, constants, T):
         next_y_vel = y_vel + T*(x_pos[-1] + k3_contrib - next_y_pos - k1*y_vel)/k2_stable
 
     return next_y_pos, next_y_vel
+
+def rotate_vector(vector, angle, direction):
+    """
+    Rotates a vector by a given angle and a direction.
+    ## Parameters
+    **vector**: *array_like*\n
+    The vector to be rotated.\n
+    **angle**: *float*\n
+    The angle (in radians) the vector will rotate.\n
+    **direction**: *int*\n
+    1: rotates counterclockwise\n
+    -1: rotates clockwise\n
+    ## Returns:
+    **new_vector**: *ndarray*\n
+    The rotated vector.
+    """
+    # Rotates a vector by a given angle in a direction
+    dx, dy = vector
+    rotated_dx = dx * math.cos(angle) - dy * direction * math.sin(angle)
+    rotated_dy = dx * direction * math.sin(angle) + dy * math.cos(angle)
+    new_vector = np.array([rotated_dx, rotated_dy])
+    return new_vector
