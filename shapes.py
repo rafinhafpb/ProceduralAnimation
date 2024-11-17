@@ -130,5 +130,6 @@ class Chain:
             
 lizard_shaped = [52, 58, 40, 60, 68, 71, 65, 50, 28, 15, 11, 9, 7, 7]
 fish_shaped = [30, 40, 35, 32, 30, 25, 20, 10, 10]
-cobra_shaped = [25, 30, 25, 24, 22, 20, 18, 16, 14, 12, 11, 10, 9, 8, 7, 6, 5, 4]
+cobra_shaped = [24, 30, 26]
+cobra_shaped.extend(np.linspace(25, 4, 30))
     
