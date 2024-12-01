@@ -4,6 +4,7 @@ import pygame
 import sys
 from colors import *
 import math
+from scipy.interpolate import interp1d, PchipInterpolator
 
 # Define the screen size
 screen_size = screen_width, screen_height = 1080, 720
@@ -122,19 +123,23 @@ def main():
                     my_dots[i + offset + 4].center = my_circles[-i].center + np.array([-dy, dx]) * my_circles[-i].size
 
         # Clear the screen
-        screen.fill(black)
+        screen.fill(dark_blue)
 
         # Display circles
-        for i in range(len(body_shape)):
-            my_circles[i].display()
+        #for i in range(len(body_shape)):
+        #    my_circles[i].display()
 
         # Draws whole body connecting the dots
         polygon = np.array([dot.center for dot in my_dots])
-        pygame.draw.polygon(screen, white, polygon)
+
+        new_polygon = draw_curved_polygon(polygon, 10, method='quadratic')
+
+        pygame.draw.polygon(screen, white, new_polygon)
+        #pygame.draw.polygon(screen, black, new_polygon, 2)
 
         # Display dots
-        for i in range(len(my_dots)):
-            my_dots[i].display()
+        #for i in range(len(my_dots)):
+        #    my_dots[i].display()
 
         # Display everything in the screen
         pygame.display.flip()

@@ -1,7 +1,7 @@
 import pygame
 import sys
 from colors import *
-from shapes import Circle, Dot
+from shapes import *
 from dynamics import *
 
 # Define the screen size
