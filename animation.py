@@ -27,6 +27,7 @@ my_circles, my_dots = [], []
 radius = 20
 angle_threshold = 30
 body_shape = cobra_shaped
+constants = f, zeta, r = [1, 1, 2]    # Define control parameters for animation
 # ----------------------- #
 
 for i in range(len(body_shape)):
@@ -35,11 +36,15 @@ for i in range(len(body_shape)):
 for i in range(2*len(body_shape) + 4):
     my_dots.append(Dot(center_screen, red))
 
-directions = directions = np.zeros((len(body_shape), 2))
+goal = Circle(center_screen, 5, red, 0)
+
+directions = np.zeros((len(body_shape), 2))
 angle_threshold = math.radians(angle_threshold)
 
-
 def main():
+    head_pos_array = np.zeros((2), dtype=tuple)
+    angles_array = np.linspace(0, 2*np.pi, 100)
+
     while True:
         #Limit FPS
         clock.tick(FPS)
@@ -52,13 +57,23 @@ def main():
         
         # Get mouse position
         mouse_pos = np.array(pygame.mouse.get_pos())
-
+        # Get current angle from angle array and roll the intire array
+        angle = angles_array[0]
+        angles_array = np.roll(angles_array, -1)
+        # Calculate the x and y coordinates deslocated by the mouse position and radius 50
+        circle_coords = np.array([50*math.cos(angle)+mouse_pos[0], 50*math.sin(angle)+mouse_pos[1]])
+        goal.center = mouse_pos
+        # Updates the next position for the animal to follow
+        head_pos_array = np.roll(head_pos_array, -1)
+        head_pos_array[-1] = circle_coords
+        
         if (math.dist(my_circles[0].center, mouse_pos)) > radius:
             # Compute direction vector and constrain position
-            direction = (mouse_pos - my_circles[0].center) / math.dist(mouse_pos, my_circles[0].center)
-  
+            direction = (circle_coords - my_circles[0].center) / math.dist(circle_coords, my_circles[0].center)
             directions[0] = direction
-            my_circles[0].center = mouse_pos - direction * radius
+
+            # Calculate next head position and velocity
+            my_circles[0].center, my_circles[0].vel = SecondOrderDynamics(head_pos_array, my_circles[0].center, my_circles[0].vel, constants, 1/FPS)
 
             # Do the same for every other point in the body
             for i in range(len(body_shape)-1):
@@ -125,21 +140,16 @@ def main():
         # Clear the screen
         screen.fill(dark_blue)
 
-        # Display circles
-        #for i in range(len(body_shape)):
-        #    my_circles[i].display()
-
         # Draws whole body connecting the dots
         polygon = np.array([dot.center for dot in my_dots])
 
-        new_polygon = draw_curved_polygon(polygon, 10, method='quadratic')
-
+        # Calculates refined polygon with more points and draw it
+        new_polygon = draw_curved_polygon(polygon, 5, method='quadratic')
         pygame.draw.polygon(screen, white, new_polygon)
-        #pygame.draw.polygon(screen, black, new_polygon, 2)
+        pygame.draw.polygon(screen, black, new_polygon, 2)
 
-        # Display dots
-        #for i in range(len(my_dots)):
-        #    my_dots[i].display()
+        # Display mouse position
+        goal.display()
 
         # Display everything in the screen
         pygame.display.flip()
